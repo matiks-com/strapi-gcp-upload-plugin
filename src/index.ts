@@ -50,6 +50,7 @@ export function init(providerOptions: ProviderOptions) {
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
+                    public: true,
                 };
 
                 const blob = bucket.file(filePath);
@@ -85,6 +86,7 @@ export function init(providerOptions: ProviderOptions) {
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
+                    public: true,
                 };
 
                 const blob = bucket.file(filePath);
