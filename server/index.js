@@ -1,5 +1,5 @@
-import { Storage } from '@google-cloud/storage';
-import path from 'path';
+const { Storage } = require('@google-cloud/storage');
+const path = require('path');
 
 function init(providerOptions) {
   const {
