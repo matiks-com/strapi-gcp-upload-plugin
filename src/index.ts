@@ -20,6 +20,12 @@ type File = {
     url?: string;
 };
 
+const generateUploadFileName = (basePath: string, file: File) => {
+    const filePath = `${Date.now()}-${file.name}`;
+    const extension = file.name.split('.').pop();
+    return `${basePath}/${filePath}.${extension}`;
+};
+
 export function init(providerOptions: ProviderOptions) {
     const {
         bucketName,
@@ -36,7 +42,7 @@ export function init(providerOptions: ProviderOptions) {
     return {
         upload(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, uuidv4() + path.extname(file.name));
+                const filePath = generateUploadFileName(basePath, file);
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -71,7 +77,7 @@ export function init(providerOptions: ProviderOptions) {
 
         uploadStream(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, file.path ? file.path : '');
+                const filePath = generateUploadFileName(basePath, file);
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -128,10 +134,10 @@ export function init(providerOptions: ProviderOptions) {
                 try {
                     const filePath = path.join(basePath, file.path ? file.path : '');
 
-                    const options: GetSignedUrlConfig= {
+                    const options: GetSignedUrlConfig = {
                         version: 'v4',
                         action: 'read',
-                        expires: 60*60*24*29
+                        expires: 60 * 60 * 24 * 29
                     };
 
                     const [url] = await bucket.file(filePath).getSignedUrl(options);
