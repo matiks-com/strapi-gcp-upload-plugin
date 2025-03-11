@@ -1,9 +1,9 @@
 {
   "name": "strapi-provider-upload-gcp-gcs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Google Cloud Storage provider for Strapi upload",
   "strapi": {
-    "name": "GCP Upload",
+    "name": "gcp-upload",
     "description": "Google Cloud Storage provider for Strapi upload",
     "kind": "plugin"
   },
