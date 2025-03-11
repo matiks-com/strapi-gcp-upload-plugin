@@ -3,7 +3,7 @@ import path from 'path';
 const generateUploadFileName = (basePath, file) => {
     const filePath = `${Date.now()}-${file.name}`;
     const extension = file.name.split('.').pop();
-    return `${basePath}/${filePath}.${extension}`;
+    return `${basePath}/${filePath}`;
 };
 export function init(providerOptions) {
     const { bucketName, publicFiles = false, uniform = true, baseUrl, basePath = '', } = providerOptions;

@@ -23,7 +23,7 @@ type File = {
 const generateUploadFileName = (basePath: string, file: File) => {
     const filePath = `${Date.now()}-${file.name}`;
     const extension = file.name.split('.').pop();
-    return `${basePath}/${filePath}.${extension}`;
+    return `${basePath}/${filePath}`;
 };
 
 export function init(providerOptions: ProviderOptions) {
