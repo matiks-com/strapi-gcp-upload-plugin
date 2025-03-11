@@ -1,0 +1,25 @@
+{
+  "name": "strapi-provider-upload-gcp-gcs",
+  "version": "1.0.0",
+  "description": "Google Cloud Storage provider for Strapi upload",
+  "strapi": {
+    "name": "GCP Upload",
+    "description": "Google Cloud Storage provider for Strapi upload",
+    "kind": "plugin"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.15.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matiks-com/strapi-gcp-upload-plugin.git"
+  },
+  "author": {
+    "name": "Rishav Barnwal",
+    "email": "rishav@matiks.com"
+  },
+  "engines": {
+    "node": ">=14.19.1 <=23.x.x"
+  },
+  "license": "MIT"
+}
