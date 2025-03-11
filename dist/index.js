@@ -1,6 +1,10 @@
 import { Storage } from '@google-cloud/storage';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+const generateUploadFileName = (basePath, file) => {
+    const filePath = `${Date.now()}-${file.name}`;
+    const extension = file.name.split('.').pop();
+    return `${basePath}/${filePath}.${extension}`;
+};
 export function init(providerOptions) {
     const { bucketName, publicFiles = false, uniform = true, baseUrl, basePath = '', } = providerOptions;
     const storage = new Storage();
@@ -8,7 +12,7 @@ export function init(providerOptions) {
     return {
         upload(file) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, uuidv4() + path.extname(file.name));
+                const filePath = generateUploadFileName(basePath, file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -38,7 +42,7 @@ export function init(providerOptions) {
         },
         uploadStream(file) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, file.path ? file.path : '');
+                const filePath = generateUploadFileName(basePath, file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
