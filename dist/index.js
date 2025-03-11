@@ -19,9 +19,11 @@ export function init(providerOptions) {
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
+                    public: true,
                 };
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
+                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -49,9 +51,11 @@ export function init(providerOptions) {
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
+                    public: true,
                 };
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
+                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });

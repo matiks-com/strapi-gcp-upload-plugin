@@ -55,7 +55,7 @@ export function init(providerOptions: ProviderOptions) {
 
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-
+                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -91,6 +91,7 @@ export function init(providerOptions: ProviderOptions) {
 
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
+                blob.makePublic();
 
                 blobStream.on('error', (error) => {
                     reject(error);
