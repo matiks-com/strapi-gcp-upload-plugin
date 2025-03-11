@@ -1,55 +1,59 @@
-const { Storage } = require('@google-cloud/storage');
-const path = require('path');
+import { GetSignedUrlConfig, Storage } from '@google-cloud/storage';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-function init(providerOptions) {
+type ProviderOptions = {
+    bucketName: string;
+    publicFiles?: boolean;
+    uniform?: boolean;
+    baseUrl?: string;
+    basePath?: string;
+};
+
+type File = {
+    name: string;
+    mime: string;
+    size: number;
+    path?: string;
+    buffer?: Buffer;
+    stream?: any;
+    url?: string;
+};
+
+export function init(providerOptions: ProviderOptions) {
     const {
         bucketName,
         publicFiles = false,
-        uniform = true, // Default to true since most modern buckets use uniform access
+        uniform = true,
         baseUrl,
-        credentials,
         basePath = '',
     } = providerOptions;
 
-    // Create a storage client with the provided credentials
-    const storage = new Storage({
-        credentials: credentials ? JSON.parse(credentials) : undefined,
-    });
+    const storage = new Storage();
 
     const bucket = storage.bucket(bucketName);
 
     return {
-        upload(file) {
+        upload(file: File) {
             return new Promise((resolve, reject) => {
-                // Build the file path with optional base path
-                const filePath = path.join(basePath, file.path ? file.path : '');
+                const filePath = path.join(basePath, uuidv4() + path.extname(file.name));
 
-                // Create file upload options
-                // Do not set public: true when uniform bucket-level access is enabled
                 const fileOptions = {
                     contentType: file.mime,
-                    resumable: file.size > 5 * 1024 * 1024, // Use resumable uploads for files > 5MB
+                    resumable: file.size > 5 * 1024 * 1024,
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
                 };
 
-                // Don't set ACL if using uniform bucket-level access
-                if (!uniform && publicFiles) {
-                    fileOptions.public = true;
-                }
-
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
 
-                // Handle upload errors
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
 
-                // Handle successful upload
                 blobStream.on('finish', () => {
-                    // Construct the URL based on access settings
                     if (publicFiles) {
                         file.url = `https://storage.googleapis.com/${bucketName}/${filePath}`;
                     } else if (baseUrl) {
@@ -58,45 +62,32 @@ function init(providerOptions) {
                         file.url = `/${filePath}`;
                     }
 
-                    resolve();
+                    resolve(200);
                 });
 
-                // Write file buffer to stream and end it
                 blobStream.end(file.buffer);
             });
         },
 
-        uploadStream(file) {
+        uploadStream(file: File) {
             return new Promise((resolve, reject) => {
-                // Build the file path with optional base path
                 const filePath = path.join(basePath, file.path ? file.path : '');
 
-                // Create file upload options
-                // Do not set public: true when uniform bucket-level access is enabled
                 const fileOptions = {
                     contentType: file.mime,
-                    resumable: true, // Always use resumable uploads for streams
+                    resumable: true,
                     metadata: {
                         contentDisposition: `inline; filename="${file.name}"`,
                     },
                 };
 
-                // Don't set ACL if using uniform bucket-level access
-                if (!uniform && publicFiles) {
-                    fileOptions.public = true;
-                }
-
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
 
-                // Handle upload errors
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
-
-                // Handle successful upload
                 blobStream.on('finish', () => {
-                    // Construct the URL based on access settings
                     if (publicFiles) {
                         file.url = `https://storage.googleapis.com/${bucketName}/${filePath}`;
                     } else if (baseUrl) {
@@ -105,48 +96,42 @@ function init(providerOptions) {
                         file.url = `/${filePath}`;
                     }
 
-                    resolve();
+                    resolve(200);
                 });
 
-                // Pipe file stream to blob stream
                 file.stream.pipe(blobStream);
             });
         },
 
-        delete(file) {
+        delete(file: File) {
             return new Promise((resolve, reject) => {
-                // Build the file path with optional base path
                 const filePath = path.join(basePath, file.path ? file.path : '');
 
-                // Delete the file from Google Cloud Storage
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
                 }).then(() => {
-                    resolve();
+                    resolve(200);
                 }).catch((error) => {
                     reject(error);
                 });
             });
         },
 
-        checkFileSize(file, { sizeLimit }) {
-            // Implement custom file size limit logic
+        checkFileSize(file: File, { sizeLimit }: { sizeLimit: number }) {
             if (file.size > sizeLimit) {
                 throw new Error(`File size exceeds the limit of ${sizeLimit} bytes`);
             }
         },
 
-        getSignedUrl(file) {
+        getSignedUrl(file: File) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    // Build the file path with optional base path
                     const filePath = path.join(basePath, file.path ? file.path : '');
 
-                    // Generate a signed URL that expires in 15 minutes (900 seconds)
-                    const options = {
+                    const options: GetSignedUrlConfig= {
                         version: 'v4',
                         action: 'read',
-                        expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+                        expires: 60*60*24*29
                     };
 
                     const [url] = await bucket.file(filePath).getSignedUrl(options);
@@ -158,12 +143,7 @@ function init(providerOptions) {
         },
 
         isPrivate() {
-            // If publicFiles is false, then the files are private and need signed URLs
             return !publicFiles;
         },
     };
 }
-module.exports = {
-    init,
-};
-
