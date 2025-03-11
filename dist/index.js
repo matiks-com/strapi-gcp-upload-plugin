@@ -23,7 +23,6 @@ export function init(providerOptions) {
                 };
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -37,6 +36,7 @@ export function init(providerOptions) {
                     else {
                         file.url = `/${filePath}`;
                     }
+                    blob.makePublic();
                     resolve(200);
                 });
                 blobStream.end(file.buffer);
@@ -55,7 +55,6 @@ export function init(providerOptions) {
                 };
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -69,6 +68,7 @@ export function init(providerOptions) {
                     else {
                         file.url = `/${filePath}`;
                     }
+                    blob.makePublic();
                     resolve(200);
                 });
                 file.stream.pipe(blobStream);

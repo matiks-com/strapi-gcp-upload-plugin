@@ -55,11 +55,10 @@ export function init(providerOptions: ProviderOptions) {
 
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-                blob.makePublic();
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
-
+                
                 blobStream.on('finish', () => {
                     if (publicFiles) {
                         file.url = `https://storage.googleapis.com/${bucketName}/${filePath}`;
@@ -68,7 +67,8 @@ export function init(providerOptions: ProviderOptions) {
                     } else {
                         file.url = `/${filePath}`;
                     }
-
+                    
+                    blob.makePublic();
                     resolve(200);
                 });
 
@@ -91,8 +91,7 @@ export function init(providerOptions: ProviderOptions) {
 
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-                blob.makePublic();
-
+                
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -104,6 +103,7 @@ export function init(providerOptions: ProviderOptions) {
                     } else {
                         file.url = `/${filePath}`;
                     }
+                    blob.makePublic();
 
                     resolve(200);
                 });
