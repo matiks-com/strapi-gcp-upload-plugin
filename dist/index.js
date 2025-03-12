@@ -1,14 +1,8 @@
 import { Storage } from '@google-cloud/storage';
-const generateUploadFileName = (basePath, file) => {
-    const filePath = `${Date.now()}-${file.name}`;
-    const extension = file.name.split('.').pop();
-    return `${basePath}/${filePath}`;
-};
 export function init(providerOptions) {
     const { bucketName, publicFiles = false, uniform = true, baseUrl, basePath = '', } = providerOptions;
     const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
-    console.warn('filePrefix', filePrefix);
-    const getFileKey = (file) => {
+    const getFileName = (file) => {
         const path = file.path ? `${file.path}/` : '';
         return `${filePrefix}${path}${file.hash}${file.ext}`;
     };
@@ -17,8 +11,7 @@ export function init(providerOptions) {
     return {
         upload(file) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
-                console.warn('filePath', filePath);
+                const filePath = getFileName(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -50,8 +43,7 @@ export function init(providerOptions) {
         },
         uploadStream(file) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
-                console.warn('filePath', filePath);
+                const filePath = getFileName(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
@@ -83,7 +75,7 @@ export function init(providerOptions) {
         },
         delete(file) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
+                const filePath = getFileName(file);
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
                 }).then(() => {
@@ -101,7 +93,7 @@ export function init(providerOptions) {
         getSignedUrl(file) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = getFileKey(file);
+                    const filePath = getFileName(file);
                     const options = {
                         version: 'v4',
                         action: 'read',

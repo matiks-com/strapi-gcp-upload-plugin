@@ -29,13 +29,6 @@ export interface File {
     stream?: any;
     buffer?: Buffer;
 }
-
-const generateUploadFileName = (basePath: string, file: File) => {
-    const filePath = `${Date.now()}-${file.name}`;
-    const extension = file.name.split('.').pop();
-    return `${basePath}/${filePath}`;
-};
-
 export function init(providerOptions: ProviderOptions) {
     const {
         bucketName,
@@ -46,9 +39,8 @@ export function init(providerOptions: ProviderOptions) {
     } = providerOptions;
 
     const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
-    console.warn('filePrefix', filePrefix);
     
-    const getFileKey = (file: File) => {
+    const getFileName = (file: File) => {
         const path = file.path ? `${file.path}/` : '';
         return `${filePrefix}${path}${file.hash}${file.ext}`;
     };
@@ -60,8 +52,7 @@ export function init(providerOptions: ProviderOptions) {
     return {
         upload(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
-                console.warn('filePath', filePath);
+                const filePath = getFileName(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -96,8 +87,7 @@ export function init(providerOptions: ProviderOptions) {
 
         uploadStream(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
-                console.warn('filePath', filePath);
+                const filePath = getFileName(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
@@ -132,7 +122,7 @@ export function init(providerOptions: ProviderOptions) {
 
         delete(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = getFileKey(file);
+                const filePath = getFileName(file);
 
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
@@ -153,7 +143,7 @@ export function init(providerOptions: ProviderOptions) {
         getSignedUrl(file: File) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = getFileKey(file);
+                    const filePath = getFileName(file);
 
                     const options: GetSignedUrlConfig = {
                         version: 'v4',
