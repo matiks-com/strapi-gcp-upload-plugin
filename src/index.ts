@@ -46,7 +46,8 @@ export function init(providerOptions: ProviderOptions) {
     } = providerOptions;
 
     const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
-
+    console.warn('filePrefix', filePrefix);
+    
     const getFileKey = (file: File) => {
         const path = file.path ? `${file.path}/` : '';
         return `${filePrefix}${path}${file.hash}${file.ext}`;
@@ -60,7 +61,7 @@ export function init(providerOptions: ProviderOptions) {
         upload(file: File) {
             return new Promise((resolve, reject) => {
                 const filePath = getFileKey(file);
-
+                console.warn('filePath', filePath);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -96,7 +97,7 @@ export function init(providerOptions: ProviderOptions) {
         uploadStream(file: File) {
             return new Promise((resolve, reject) => {
                 const filePath = getFileKey(file);
-
+                console.warn('filePath', filePath);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
