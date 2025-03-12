@@ -6,12 +6,17 @@ const generateUploadFileName = (basePath, file) => {
 };
 export function init(providerOptions) {
     const { bucketName, publicFiles = false, uniform = true, baseUrl, basePath = '', } = providerOptions;
+    const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
+    const getFileKey = (file) => {
+        const path = file.path ? `${file.path}/` : '';
+        return `${filePrefix}${path}${file.hash}${file.ext}`;
+    };
     const storage = new Storage();
     const bucket = storage.bucket(bucketName);
     return {
         upload(file) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -43,7 +48,7 @@ export function init(providerOptions) {
         },
         uploadStream(file) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
@@ -75,7 +80,7 @@ export function init(providerOptions) {
         },
         delete(file) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
                 }).then(() => {
@@ -93,7 +98,7 @@ export function init(providerOptions) {
         getSignedUrl(file) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = `${basePath}/${file.hash}`;
+                    const filePath = getFileKey(file);
                     const options = {
                         version: 'v4',
                         action: 'read',

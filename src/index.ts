@@ -9,17 +9,26 @@ type ProviderOptions = {
     baseUrl?: string;
     basePath?: string;
 };
-
-type File = {
+export interface File {
     name: string;
+    alternativeText?: string;
+    caption?: string;
+    width?: number;
+    height?: number;
+    formats?: Record<string, unknown>;
+    hash: string;
+    ext?: string;
     mime: string;
     size: number;
+    sizeInBytes: number;
+    url: string;
+    previewUrl?: string;
     path?: string;
-    buffer?: Buffer;
+    provider?: string;
+    provider_metadata?: Record<string, unknown>;
     stream?: any;
-    url?: string;
-    hash: string;
-};
+    buffer?: Buffer;
+}
 
 const generateUploadFileName = (basePath: string, file: File) => {
     const filePath = `${Date.now()}-${file.name}`;
@@ -36,6 +45,13 @@ export function init(providerOptions: ProviderOptions) {
         basePath = '',
     } = providerOptions;
 
+    const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
+
+    const getFileKey = (file: File) => {
+        const path = file.path ? `${file.path}/` : '';
+        return `${filePrefix}${path}${file.hash}${file.ext}`;
+    };
+
     const storage = new Storage();
 
     const bucket = storage.bucket(bucketName);
@@ -43,7 +59,7 @@ export function init(providerOptions: ProviderOptions) {
     return {
         upload(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -59,7 +75,7 @@ export function init(providerOptions: ProviderOptions) {
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
-                
+
                 blobStream.on('finish', () => {
                     if (publicFiles) {
                         file.url = `https://storage.googleapis.com/${bucketName}/${filePath}`;
@@ -68,7 +84,7 @@ export function init(providerOptions: ProviderOptions) {
                     } else {
                         file.url = `/${filePath}`;
                     }
-                    
+
                     blob.makePublic();
                     resolve(200);
                 });
@@ -79,7 +95,7 @@ export function init(providerOptions: ProviderOptions) {
 
         uploadStream(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -92,7 +108,7 @@ export function init(providerOptions: ProviderOptions) {
 
                 const blob = bucket.file(filePath);
                 const blobStream = blob.createWriteStream(fileOptions);
-                
+
                 blobStream.on('error', (error) => {
                     reject(error);
                 });
@@ -115,7 +131,7 @@ export function init(providerOptions: ProviderOptions) {
 
         delete(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = `${basePath}/${file.hash}`;
+                const filePath = getFileKey(file);
 
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
@@ -136,7 +152,7 @@ export function init(providerOptions: ProviderOptions) {
         getSignedUrl(file: File) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = `${basePath}/${file.hash}`;
+                    const filePath = getFileKey(file);
 
                     const options: GetSignedUrlConfig = {
                         version: 'v4',
