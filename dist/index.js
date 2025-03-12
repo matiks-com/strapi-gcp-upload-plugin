@@ -1,12 +1,15 @@
-import { Storage } from '@google-cloud/storage';
-export function init(providerOptions) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.init = init;
+const storage_1 = require("@google-cloud/storage");
+function init(providerOptions) {
     const { bucketName, publicFiles = false, uniform = true, baseUrl, basePath = '', } = providerOptions;
     const filePrefix = basePath ? `${basePath.replace(/\/+$/, '')}/` : '';
     const getFileName = (file) => {
         const path = file.path ? `${file.path}/` : '';
         return `${filePrefix}${path}${file.hash}${file.ext}`;
     };
-    const storage = new Storage();
+    const storage = new storage_1.Storage();
     const bucket = storage.bucket(bucketName);
     return {
         upload(file) {
