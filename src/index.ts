@@ -18,6 +18,7 @@ type File = {
     buffer?: Buffer;
     stream?: any;
     url?: string;
+    hash: string;
 };
 
 const generateUploadFileName = (basePath: string, file: File) => {
@@ -42,7 +43,7 @@ export function init(providerOptions: ProviderOptions) {
     return {
         upload(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = generateUploadFileName(basePath, file);
+                const filePath = `${basePath}/${file.hash}`;
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -78,7 +79,7 @@ export function init(providerOptions: ProviderOptions) {
 
         uploadStream(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = generateUploadFileName(basePath, file);
+                const filePath = `${basePath}/${file.hash}`;
 
                 const fileOptions = {
                     contentType: file.mime,
@@ -114,7 +115,7 @@ export function init(providerOptions: ProviderOptions) {
 
         delete(file: File) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, file.path ? file.path : '');
+                const filePath = `${basePath}/${file.hash}`;
 
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
@@ -135,7 +136,7 @@ export function init(providerOptions: ProviderOptions) {
         getSignedUrl(file: File) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = path.join(basePath, file.path ? file.path : '');
+                    const filePath = `${basePath}/${file.hash}`;
 
                     const options: GetSignedUrlConfig = {
                         version: 'v4',

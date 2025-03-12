@@ -1,5 +1,4 @@
 import { Storage } from '@google-cloud/storage';
-import path from 'path';
 const generateUploadFileName = (basePath, file) => {
     const filePath = `${Date.now()}-${file.name}`;
     const extension = file.name.split('.').pop();
@@ -12,7 +11,7 @@ export function init(providerOptions) {
     return {
         upload(file) {
             return new Promise((resolve, reject) => {
-                const filePath = generateUploadFileName(basePath, file);
+                const filePath = `${basePath}/${file.hash}`;
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: file.size > 5 * 1024 * 1024,
@@ -44,7 +43,7 @@ export function init(providerOptions) {
         },
         uploadStream(file) {
             return new Promise((resolve, reject) => {
-                const filePath = generateUploadFileName(basePath, file);
+                const filePath = `${basePath}/${file.hash}`;
                 const fileOptions = {
                     contentType: file.mime,
                     resumable: true,
@@ -76,7 +75,7 @@ export function init(providerOptions) {
         },
         delete(file) {
             return new Promise((resolve, reject) => {
-                const filePath = path.join(basePath, file.path ? file.path : '');
+                const filePath = `${basePath}/${file.hash}`;
                 bucket.file(filePath).delete({
                     ignoreNotFound: true,
                 }).then(() => {
@@ -94,7 +93,7 @@ export function init(providerOptions) {
         getSignedUrl(file) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const filePath = path.join(basePath, file.path ? file.path : '');
+                    const filePath = `${basePath}/${file.hash}`;
                     const options = {
                         version: 'v4',
                         action: 'read',
